@@ -521,7 +521,7 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="DarkOrange" />
+                            <Setter TargetName="Border" Property="Background" Value="LimeGreen" />
                             <Setter Property="Foreground" Value="Black" />
                             <Setter TargetName="Border" Property="BorderThickness" Value="1,1,1,0" />
                             <Setter TargetName="Border" Property="Margin" Value="0,0,-4,0" />
