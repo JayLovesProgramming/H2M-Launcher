@@ -1,14 +1,14 @@
 {
   "profiles": {
     "http": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
+      "commandName": "Project", // Indicates that this profile launches the project directly.
+      "launchBrowser": true, // Automatically launches the browser when the application starts.
+      "launchUrl": "swagger", // Sets the default URL to open (Swagger UI in this case).
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development" // Sets the ASP.NET Core environment to Development.
       },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5041"
+      "dotnetRunMessages": true, // Enables display of run messages in the output.
+      "applicationUrl": "http://localhost:5041" // The HTTP URL where the application is hosted.
     },
     "https": {
       "commandName": "Project",
@@ -18,10 +18,10 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7208;http://localhost:5041"
+      "applicationUrl": "https://localhost:7208;http://localhost:5041" // The HTTPS and HTTP URLs where the application is hosted.
     },
     "IIS Express": {
-      "commandName": "IISExpress",
+      "commandName": "IISExpress", // Specifies the use of IIS Express to host the application.
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
@@ -29,24 +29,24 @@
       }
     },
     "Container (Dockerfile)": {
-      "commandName": "Docker",
+      "commandName": "Docker", // Specifies the use of Docker to run the application.
       "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger", // Uses a templated URL format based on Docker configuration.
       "environmentVariables": {
-        "ASPNETCORE_HTTPS_PORTS": "9001",
-        "ASPNETCORE_HTTP_PORTS": "9000"
+        "ASPNETCORE_HTTPS_PORTS": "9001", // The HTTPS port mapped inside the Docker container.
+        "ASPNETCORE_HTTP_PORTS": "9000" // The HTTP port mapped inside the Docker container.
       },
-      "publishAllPorts": true,
-      "useSSL": true
+      "publishAllPorts": true, // Ensures all ports are exposed when running in Docker.
+      "useSSL": true // Enables SSL usage inside the Docker container.
     }
   },
-  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "$schema": "http://json.schemastore.org/launchsettings.json", // JSON schema reference for launch settings validation.
   "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
+    "windowsAuthentication": false, // Disables Windows Authentication.
+    "anonymousAuthentication": true, // Enables anonymous access to the application.
     "iisExpress": {
-      "applicationUrl": "http://localhost:44373",
-      "sslPort": 44349
+      "applicationUrl": "http://localhost:44373", // The base URL for IIS Express.
+      "sslPort": 44349 // The SSL port used by IIS Express.
     }
   }
 }
