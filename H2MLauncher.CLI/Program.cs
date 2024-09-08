@@ -1,10 +1,11 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Text;
 using System.Drawing;
 
 partial class Program
 {
+    // Import necessary Windows API functions for process manipulation
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern IntPtr LoadLibrary(string lpFileName);
 
@@ -14,10 +15,11 @@ partial class Program
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern bool FreeLibrary(IntPtr hModule);
 
+    // Delegate type for the C++ function
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     private delegate void CBuff_AddTextDelegate(int localClientNum, int controllerIndex, IntPtr text);
 
-    // Import the necessary Windows API functions
+    // Import Windows API functions for process memory manipulation
     [DllImport("kernel32.dll")]
     public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
 
@@ -26,7 +28,6 @@ partial class Program
 
     [DllImport("kernel32.dll")]
     public static extern bool CloseHandle(IntPtr hObject);
-
 
     [DllImport("kernel32.dll", SetLastError = true)]
     static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize,
@@ -39,16 +40,14 @@ partial class Program
     const int PROCESS_VM_WRITE = 0x0020;
     const int PROCESS_VM_READ = 0x0010;
 
+    // Memory allocation and protection constants
     const uint MEM_COMMIT = 0x00001000;
     const uint MEM_RESERVE = 0x00002000;
     const uint PAGE_READWRITE = 0x04;
     const uint PAGE_EXECUTE_READWRITE = 0x40;
     const uint MEM_RELEASE = 0x8000;
 
-
-
-
-    // Enums matching the C++ enums
+    // Enum definitions matching the C++ enums for network types and sources
     enum netadrtype_t
     {
         NA_BOT = 0x0,
@@ -67,7 +66,7 @@ partial class Program
         NS_INVALID_NETSRC = 0x4,
     }
 
-    // Struct matching netadr_s
+    // Structs matching the C++ structures for network addresses and states
     [StructLayout(LayoutKind.Sequential)]
     struct netadr_s
     {
@@ -79,47 +78,44 @@ partial class Program
         public uint addrHandleIndex;
     }
 
-    // Struct matching connect_state_t
     [StructLayout(LayoutKind.Sequential)]
     struct connect_state_t
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)] // To match the __pad0[0xC]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)] // Placeholder for 12 bytes of padding
         public byte[] __pad0;
-        public netadr_s address;
+        public netadr_s address; // Network address information
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     struct client_state_t
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 19024)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 19024)] // Placeholder for 19024 bytes of padding
         public byte[] __pad0;
         public int ping;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)] // Placeholder for 8 bytes of padding
         public byte[] __pad1;
-        public int num_players;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 48)]
+        public int num_players; // Number of players
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 48)] // Placeholder for 48 bytes of padding
         public byte[] __pad2;
-        public int serverTime;
+        public int serverTime; // Server time
     };
 
-
+    // Method to read and display client state from another process's memory
     static void ReadClientState(IntPtr hProcess, IntPtr baseAddress)
     {
-        // Size of the client_state_t struct (12 bytes for padding + netadr_s size)
         int structSize = Marshal.SizeOf(typeof(client_state_t));
         byte[] buffer = new byte[structSize];
         int bytesRead;
 
-        // Read the memory
         bool success = ReadProcessMemory(hProcess, baseAddress, buffer, buffer.Length, out bytesRead);
 
         if (success && bytesRead == structSize)
         {
-            // Convert the byte array into a client_state_t struct
             GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
             client_state_t connectState = (client_state_t)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(client_state_t));
             handle.Free();
 
-            // Example: Access the fields in client_state_t
+            // Output client state details
             Console.WriteLine("Ping: " + connectState.ping);
             Console.WriteLine("NumPlayers: " + connectState.num_players);
             Console.WriteLine("ServerTime: " + connectState.serverTime);
@@ -130,24 +126,22 @@ partial class Program
         }
     }
 
+    // Method to read and display connection state from another process's memory
     static void ReadConnectState(IntPtr hProcess, IntPtr baseAddress)
     {
-        // Size of the connect_state_t struct (12 bytes for padding + netadr_s size)
         int structSize = Marshal.SizeOf(typeof(connect_state_t));
         byte[] buffer = new byte[structSize];
         int bytesRead;
 
-        // Read the memory
         bool success = ReadProcessMemory(hProcess, baseAddress, buffer, buffer.Length, out bytesRead);
 
         if (success && bytesRead == structSize)
         {
-            // Convert the byte array into a connect_state_t struct
             GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
             connect_state_t connectState = (connect_state_t)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(connect_state_t));
             handle.Free();
 
-            // Example: Access the fields in connect_state_t
+            // Output connection state details
             Console.WriteLine("Type: " + connectState.address.type);
             Console.WriteLine("IP: " + string.Join(".", connectState.address.ip));
             Console.WriteLine("Port: " + connectState.address.port);
@@ -160,16 +154,17 @@ partial class Program
         }
     }
 
+    // Import additional Windows API functions for memory management
     [DllImport("kernel32.dll", SetLastError = true)]
     static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint dwFreeType);
+
     [DllImport("kernel32.dll", SetLastError = true)]
     static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out IntPtr lpNumberOfBytesWritten);
 
-
-    // Define a structure to hold the parameters
+    // Define a structure to hold the parameters for the C++ function
     [StructLayout(LayoutKind.Sequential)]
     public struct CBuff_AddTextParams
     {
@@ -178,13 +173,13 @@ partial class Program
         public IntPtr text;
     }
 
+    // Memory offsets for specific game-related variables
     const nint PLAYER_NAME_OFFSET_H1 = 0x3516F83;
     const nint DISCORD_ACTIVITY_OFFSET_H2MMOD = 0x56FF29;
     const nint CONNECTION_STATE_H1 = 0x2EC82C8;
     const nint LEVEL_ENTITY_ID_H1 = 0xB1100B0;
-    // last server (after leaving): h1_mp64_ship.exe+C9561B3
 
-
+    // Enum matching the C++ connection states
     enum connstate_t
     {
         CA_DISCONNECTED = 0x0,
@@ -200,15 +195,15 @@ partial class Program
         CA_ACTIVE = 0xA,
     };
 
+    // Read an integer from another process's memory
     static bool ReadProcessMemoryInt2(nint hProcess, nint lpBaseAddress, out int value)
     {
-        byte[] buffer = new byte[sizeof(int)]; // Size of an int (4 bytes)
+        byte[] buffer = new byte[sizeof(int)];
         int bytesRead;
 
         bool success = ReadProcessMemory(hProcess, lpBaseAddress, buffer, buffer.Length, out bytesRead);
         if (success)
         {
-            // Convert the byte array to an integer
             int newValue = BitConverter.ToInt32(buffer, 0);
             value = newValue;
             return true;
@@ -217,15 +212,15 @@ partial class Program
         return false;
     }
 
+    // Read an integer from another process's memory
     static bool ReadProcessMemoryInt(nint hProcess, nint lpBaseAddress, out int value)
     {
-        byte[] buffer = new byte[sizeof(int)]; // Size of an int (4 bytes)
+        byte[] buffer = new byte[sizeof(int)];
         int bytesRead;
 
         bool success = ReadProcessMemory(hProcess, lpBaseAddress, buffer, buffer.Length, out bytesRead);
         if (success)
         {
-            // Convert the byte array to an integer
             int newValue = BitConverter.ToInt32(buffer, 0);
             value = newValue;
             return true;
@@ -234,263 +229,26 @@ partial class Program
         return false;
     }
 
-    static bool ReadProcessMemoryUInt(nint hProcess, nint lpBaseAddress, out uint value)
+    // Main function to execute memory reading operations
+    static void Main(string[] args)
     {
-        byte[] buffer = new byte[sizeof(int)]; // Size of an int (4 bytes)
-        int bytesRead;
-
-        bool success = ReadProcessMemory(hProcess, lpBaseAddress, buffer, buffer.Length, out bytesRead);
-        if (success)
+        Process[] processes = Process.GetProcessesByName("h2-mod");
+        if (processes.Length > 0)
         {
-            // Convert the byte array to an integer
-            uint newValue = BitConverter.ToUInt32(buffer, 0);
-            value = newValue;
-            return true;
+            Process h2ModProcess = processes[0];
+            IntPtr hProcess = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ, false, h2ModProcess.Id);
+
+            IntPtr connectStateBaseAddress = (IntPtr)0x07FF75A98A20; // Example base address for connection state
+            ReadConnectState(hProcess, connectStateBaseAddress);
+
+            IntPtr clientStateBaseAddress = (IntPtr)0x07FF75A99230; // Example base address for client state
+            ReadClientState(hProcess, clientStateBaseAddress);
+
+            CloseHandle(hProcess);
         }
-        value = 0;
-        return false;
-    }
-
-    [DllImport("kernel32", SetLastError = true)]
-    public static extern bool ReadProcessMemory(
-        IntPtr hProcess,
-        IntPtr lpBase,
-        ref uint lpBuffer,
-        int nSize,
-        int lpNumberOfBytesRead
-        );
-
-    static async Task Main()
-    {
-        // Example: Read integer from an external process's memory
-        // Get the target process (e.g., process named "notepad")
-        Process targetProcess = Process.GetProcessesByName("h2m-mod")[0];
-
-        // Open the process with read access
-        IntPtr hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, false, targetProcess.Id);
-
-        // Define the address you want to read from (you need to know this)
-        IntPtr baseAddress = new IntPtr(
-            targetProcess.Modules.Cast<ProcessModule>().First(m => m.ModuleName.Contains("h1_mp64")).BaseAddress);
-
-        // Create a buffer to store the read data
-        byte[] buffer = new byte[64]; // Size of an int (4 bytes)
-        int bytesRead;
-        while (true)
+        else
         {
-            // Read memory
-            bool success = ReadProcessMemoryUInt(hProcess, baseAddress + LEVEL_ENTITY_ID_H1, out uint levelId);
-            bool success2 = ReadProcessMemoryInt(hProcess, baseAddress + CONNECTION_STATE_H1, out int connectionState);
-
-            if (ReadProcessMemory(hProcess, baseAddress + 0x35624A0, buffer, 64, out _))
-            {
-                Console.WriteLine(Encoding.ASCII.GetString(buffer));
-            }
-
-            if (success && success)
-            {
-                if (levelId == 0 && connectionState >= (int)connstate_t.CA_CONNECTED)
-                {
-                    Console.WriteLine("Connected");
-                }
-                else
-                {
-                    Console.WriteLine("Disconnected");
-                }
-
-                //Console.WriteLine(((connstate_t)value).ToString());
-                Console.WriteLine("Read string: " + Encoding.ASCII.GetString(buffer));
-            }
-            else
-            {
-                Console.WriteLine("Failed to read memory.");
-            }
-
-            await Task.Delay(1000);
+            Console.WriteLine("Process not found.");
         }
-
-        Console.ReadLine();
-
-        // Close the handle to the process
-        CloseHandle(hProcess);
-
-        return;
-        //// Open the target process
-        //IntPtr hProcess = OpenProcess(
-        //    (int)(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ), 
-        //    false, 
-        //    targetProcess.Id);
-
-
-        //IntPtr CBuff_AddText_Address = IntPtr.Add(baseAddress, 0x1CF480);
-        //// Create a remote thread to execute the function
-        //IntPtr threadId;
-        //// Allocate memory in the remote process for the string parameter
-
-        //string message = "quit";
-        //byte[] textBytes = Encoding.ASCII.GetBytes(message + "\0");  // Add null terminator for string
-        //IntPtr remoteTextAddress = VirtualAllocEx(hProcess, IntPtr.Zero, (uint)textBytes.Length, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-        //if (remoteTextAddress == IntPtr.Zero)
-        //{
-        //    Console.WriteLine("Failed to allocate memory in target process.");
-        //    CloseHandle(hProcess);
-        //    return;
-        //}
-
-        //// Write the string into the allocated memory
-        //WriteProcessMemory(hProcess, remoteTextAddress, textBytes, (uint)textBytes.Length, out _);
-
-        //// Prepare the structure of parameters to pass to the remote function
-        //CBuff_AddTextParams parameters = new CBuff_AddTextParams
-        //{
-        //    localClientNum = 0,  // Example value
-        //    controllerIndex = 0,  // Example value
-        //    text = remoteTextAddress  // Pointer to the string in the remote process
-        //};
-
-        //// Allocate memory for the structure in the remote process
-        //IntPtr remoteStructAddress = VirtualAllocEx(hProcess, IntPtr.Zero, (uint)Marshal.SizeOf(parameters), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-        //if (remoteStructAddress == IntPtr.Zero)
-        //{
-        //    Console.WriteLine("Failed to allocate memory for parameters in target process.");
-        //    VirtualFreeEx(hProcess, remoteTextAddress, 0, MEM_RELEASE);
-        //    CloseHandle(hProcess);
-        //    return;
-        //}
-
-        //// Write the structure into the allocated memory
-        //byte[] structBytes = new byte[Marshal.SizeOf(parameters)];
-        //IntPtr structPtr = Marshal.AllocHGlobal(Marshal.SizeOf(parameters));
-        //Marshal.StructureToPtr(parameters, structPtr, false);
-        //Marshal.Copy(structPtr, structBytes, 0, structBytes.Length);
-        //Marshal.FreeHGlobal(structPtr);
-
-        //WriteProcessMemory(hProcess, remoteStructAddress, structBytes, (uint)structBytes.Length, out _);
-
-
-        //// Create a remote thread to call the function
-
-        //IntPtr hThread = CreateRemoteThread(hProcess, IntPtr.Zero, 0, CBuff_AddText_Address, remoteStructAddress, 0, out threadId);
-
-        //if (hThread == IntPtr.Zero)
-        //{
-        //    Console.WriteLine("Failed to create remote thread.");
-        //    VirtualFreeEx(hProcess, remoteTextAddress, 0, MEM_RELEASE);  // Free allocated memory
-        //    VirtualFreeEx(hProcess, remoteStructAddress, 0, MEM_RELEASE);  // Free allocated memory
-        //    CloseHandle(hProcess);
-        //    return;
-        //}
-
-        //Console.WriteLine($"Remote thread created with ID: {threadId}");
-
-        //// Clean up
-        //VirtualFreeEx(hProcess, remoteTextAddress, 0, MEM_RELEASE);
-        //VirtualFreeEx(hProcess, remoteStructAddress, 0, MEM_RELEASE);
-        //CloseHandle(hThread);
-        //CloseHandle(hProcess);
-
-
-        //return;
-
-
-
-        //string exePath = @"G:\SteamLibrary\steamapps\common\Call of Duty Modern Warfare Remastered\h1_mp64_ship.exe";
-
-        ////IntPtr moduleHandle = LoadLibrary(exePath);
-        ////if (moduleHandle == IntPtr.Zero)
-        ////{
-        ////    int errorCode = Marshal.GetLastWin32Error();
-        ////    Console.WriteLine($"Failed to load module. Error code: {errorCode}");
-        ////    return;
-        ////}
-
-        ////IntPtr CBuff_AddText_Address = GetProcAddress(moduleHandle, "Cbuff_AddText");
-        //IntPtr CBuff_AddText_Address = IntPtr.Add(baseAddress, 0x1CF480);
-
-        //if (CBuff_AddText_Address == IntPtr.Zero)
-        //{
-        //    int errorCode = Marshal.GetLastWin32Error();
-        //    Console.WriteLine($"Failed to get function address. Error code: {errorCode}");
-        //    //FreeLibrary(moduleHandle);
-        //    return;
-        //}
-
-        //CBuff_AddTextDelegate Cbuff_AddText = Marshal.GetDelegateForFunctionPointer<CBuff_AddTextDelegate>(CBuff_AddText_Address);
-
-        //int localClientNum = 0;
-        //int controllerIndex = 0;
-        //string command = "quit";
-
-        //IntPtr textPtr = Marshal.StringToHGlobalAnsi(command);
-
-        //try
-        //{
-        //    Cbuff_AddText(localClientNum, controllerIndex, textPtr);
-        //}
-        //catch (AccessViolationException ex)
-        //{
-        //    Console.WriteLine($"Access violation exception: {ex.Message}");
-        //}
-        //catch (Exception ex)
-        //{
-        //    Console.WriteLine($"Exception: {ex.Message}");
-        //}
-        //finally
-        //{
-        //    Marshal.FreeHGlobal(textPtr);
-        //    //FreeLibrary(moduleHandle);
-        //}
     }
 }
-
-//H2MLauncherService h2MLauncherService = new(new HttpClient());
-//Console.WriteLine("Checking for updates..");
-//bool needsUpdate = await h2MLauncherService.IsLauncherUpToDateAsync(CancellationToken.None);
-//if (needsUpdate)
-//    Console.WriteLine("Update the launcher!");
-//else
-//    Console.WriteLine("Launcher is up to date!");
-
-//RaidMaxService raidMaxService = new(new HttpClient());
-//List<RaidMaxServer> servers = await raidMaxService.GetServerInfosAsync(CancellationToken.None);
-
-//servers.ForEach(PrintServer);
-
-//void PrintServer(RaidMaxServer server)
-//{
-//    MatchCollection matches = Regex.Matches(server.HostName, @"(\^\d|\^\:)([^\^]*?)(?=\^\d|\^:|$)");
-//    if (matches.Any())
-//    {
-//        if (matches[0].Index != 0)
-//        {
-//            Console.Write(server.HostName[..matches[0].Index]);
-//        }
-//        foreach (Match match in matches)
-//        {
-//            string ma = match.Groups[1].Value;
-//            Console.ForegroundColor = ma switch
-//            {
-//                "^0" => ConsoleColor.Black,
-//                "^1" => ConsoleColor.Red,
-//                "^2" => ConsoleColor.Green,
-//                "^3" => ConsoleColor.Yellow,
-//                "^4" => ConsoleColor.Blue,
-//                "^5" => ConsoleColor.Cyan,
-//                "^6" => ConsoleColor.Magenta,
-//                "^7" => ConsoleColor.White,
-//                "^8" => ConsoleColor.Black,
-//                _ => ConsoleColor.White, // ^: rainbow
-//            };
-//            Console.Write(match.Groups[2].Value);
-//        }
-//    }
-//    else
-//    {
-//        Console.Write(server.HostName);
-//    }
-//    Console.Write(Environment.NewLine);
-//    Console.ForegroundColor = ConsoleColor.White;
-//}
-
