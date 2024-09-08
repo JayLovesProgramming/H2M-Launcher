@@ -187,7 +187,7 @@
                             Grid.Row="2" Margin="0,10,0,5" BorderThickness="1" BorderBrush="DarkGray" Background="Transparent">
                     <TabControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:IServerTabViewModel}">
-                            <TextBlock Text="{Binding TabName}"/>
+                            <TextBlock FontFamily="Consolas" Text="{Binding TabName}"/>
                         </DataTemplate>
                     </TabControl.ItemTemplate>
                     <TabControl.ContentTemplate>
