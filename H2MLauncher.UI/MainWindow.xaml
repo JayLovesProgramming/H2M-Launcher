@@ -79,8 +79,8 @@
         <KeyBinding view:InputBinding.Shortcut="{Binding Shortcuts.Reconnect}" Command="{Binding ReconnectCommand}"/>
     </Window.InputBindings>
     <Grid>
-        <Border CornerRadius="5" Padding="10,10" Background="Black"/>
-        <Border CornerRadius="5" Padding="10,10">
+        <Border CornerRadius="5" Padding="12,12" Background="Black"/>
+        <Border CornerRadius="5" Padding="12,12">
             <Border.Background>
                 <ImageBrush Stretch="UniformToFill" ImageSource="pack://application:,,,/H2MLauncher.UI;component/Assets/Background.jpg" Opacity="1"/>
             </Border.Background>
@@ -97,7 +97,8 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="85" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Padding="20" Text="H2M Launcher" FontSize="40" FontWeight="Bold" Foreground="White"/>
+                    <Image Grid.Column="0" Height="55" Source="Assets/Icon.ico" Margin="5, 5, 845, 5" />
+                    <TextBlock Text="H2M Server Browser" Padding="0 20" Foreground="White" VerticalAlignment="Center" Margin="75,0,0,0" FontSize="30" FontWeight="Bold"/>
                     <TextBlock Grid.Column="1" Text="{Binding UpdateStatusText}" Foreground="White" FontSize="20" HorizontalAlignment="Right" FontWeight="Bold" Padding="5">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
