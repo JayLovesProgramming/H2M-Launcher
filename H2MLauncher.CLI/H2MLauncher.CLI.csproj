@@ -1,13 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<!-- This is a .csproj file, which is a project file used by the .NET SDK to define the configuration for a .NET project -->
 
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- General project properties -->
   <PropertyGroup>
+    <!-- OutputType defines the type of application (Exe = executable) -->
     <OutputType>Exe</OutputType>
+    <!-- Target framework version is .NET 8.0 -->
     <TargetFramework>net8.0</TargetFramework>
+    <!-- Enables implicit using statements for common namespaces -->
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Enables nullable reference type checking -->
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Project references -->
   <ItemGroup>
+    <!-- Reference to the H2MLauncher.Core project -->
     <ProjectReference Include="..\H2MLauncher.Core\H2MLauncher.Core.csproj" />
   </ItemGroup>
 
